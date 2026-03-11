@@ -1,0 +1,31 @@
+fullname:
+  image: 265870077988.dkr.ecr.us-east-1.amazonaws.com/fullname-python-api
+  tag: latest
+  pullPolicy: IfNotPresent
+  port: 3000
+
+location:
+  image: 265870077988.dkr.ecr.us-east-1.amazonaws.com/location-node-api
+  tag: latest
+  pullPolicy: IfNotPresent
+  port: 3001
+
+marital:
+  image: 265870077988.dkr.ecr.us-east-1.amazonaws.com/marital-java-api
+  tag: latest
+  pullPolicy: IfNotPresent
+  port: 3002
+
+frontend:
+  image: 265870077988.dkr.ecr.us-east-1.amazonaws.com/react-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+  port: 80
+
+redis:
+  image: redis
+  tag: "7"
+
+mongodb:
+  image: mongo
+  tag: "7"

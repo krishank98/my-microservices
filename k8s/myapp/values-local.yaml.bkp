@@ -1,0 +1,31 @@
+fullname:
+  image: app-fullname-api
+  tag: latest
+  port: 3000
+  pullPolicy: IfNotPresent
+
+location:
+  image: app-location-api
+  tag: latest
+  port: 3001
+  pullPolicy: IfNotPresent
+
+marital:
+  image: app-marital-api
+  tag: latest
+  port: 3002
+  pullPolicy: IfNotPresent
+
+frontend:
+  image: app-frontend
+  tag: latest
+  port: 80
+  pullPolicy: IfNotPresent
+
+redis:
+  image: redis
+  tag: 7
+
+mongodb:
+  image: mongo
+  tag: 7
