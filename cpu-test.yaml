@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cpu-test
+spec:
+  replicas: 20
+  selector:
+    matchLabels:
+      app: cpu-test
+  template:
+    metadata:
+      labels:
+        app: cpu-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "128Mi"

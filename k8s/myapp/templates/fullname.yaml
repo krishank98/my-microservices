@@ -18,25 +18,26 @@ spec:
         - name: fullname-api
           image: "{{ .Values.fullname.image }}:{{ .Values.fullname.tag }}"
           imagePullPolicy: {{ .Values.fullname.pullPolicy }}
+
           ports:
             - containerPort: 3000
 
           readinessProbe:
             httpGet:
-              path: /
+              path: /fullname
               port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            timeoutSeconds: 5
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
             failureThreshold: 3
 
           livenessProbe:
             httpGet:
-              path: /
+              path: /fullname
               port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            timeoutSeconds: 5
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 3
             failureThreshold: 3
 
           env:
@@ -46,15 +47,3 @@ spec:
               value: "6379"
             - name: MONGO_URI
               value: mongodb://appuser:apppassword@mongodb:27017/demo
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: fullname-api
-spec:
-  selector:
-    app: fullname-api
-  ports:
-    - port: 3000
-      targetPort: 3000
