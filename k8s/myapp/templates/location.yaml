@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: location-api
+        tier: backend
     spec:
       imagePullSecrets:
         - name: ecr-secret
@@ -45,3 +46,19 @@ spec:
               value: redis://redis:6379
             - name: MONGO_URI
               value: mongodb://appuser:apppassword@mongodb:27017/demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: location-api
+  namespace: my-micro-dev
+  labels:
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: fullname-api
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001

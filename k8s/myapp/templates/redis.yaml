@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
+  tier: database
+  namespace: my-micro-dev
 spec:
   replicas: 1
   selector:
@@ -11,6 +13,7 @@ spec:
     metadata:
       labels:
         app: redis
+        tier: database
     spec:
       containers:
         - name: redis
