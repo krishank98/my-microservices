@@ -20,6 +20,25 @@ spec:
           imagePullPolicy: {{ .Values.fullname.pullPolicy }}
           ports:
             - containerPort: 3000
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
           env:
             - name: REDIS_HOST
               value: redis
@@ -27,6 +46,7 @@ spec:
               value: "6379"
             - name: MONGO_URI
               value: mongodb://appuser:apppassword@mongodb:27017/demo
+
 ---
 apiVersion: v1
 kind: Service

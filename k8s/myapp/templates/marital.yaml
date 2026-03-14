@@ -20,6 +20,25 @@ spec:
           imagePullPolicy: {{ .Values.marital.pullPolicy }}
           ports:
             - containerPort: 3002
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
           env:
             - name: SPRING_DATA_REDIS_HOST
               value: redis
@@ -37,5 +56,5 @@ spec:
   selector:
     app: marital-api
   ports:
-  - port: 3002
-    targetPort: 3002
+    - port: 3002
+      targetPort: 3002
