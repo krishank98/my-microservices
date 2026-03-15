@@ -2,19 +2,33 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: location-api
+  namespace: my-micro-dev
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: location-api
+      tier: backend
+
   template:
     metadata:
       labels:
         app: location-api
         tier: backend
+
     spec:
+      nodeSelector:
+        cpu-node: "2cpu"
+
+      tolerations:
+        - key: "cpu-node"
+          operator: "Equal"
+          value: "2cpu"
+          effect: "NoSchedule"
+
       imagePullSecrets:
         - name: ecr-secret
+
       containers:
         - name: location-api
           image: "{{ .Values.location.image }}:{{ .Values.location.tag }}"
@@ -46,18 +60,18 @@ spec:
               value: redis://redis:6379
             - name: MONGO_URI
               value: mongodb://appuser:apppassword@mongodb:27017/demo
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: location-api
   namespace: my-micro-dev
-  labels:
-    tier: backend
 spec:
   type: ClusterIP
   selector:
-    app: fullname-api
+    app: location-api
+    tier: backend
   ports:
     - protocol: TCP
       port: 3001

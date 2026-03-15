@@ -2,19 +2,52 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  tier: database
   namespace: my-micro-dev
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: redis
+      tier: cache
+
   template:
     metadata:
       labels:
         app: redis
-        tier: database
+        tier: cache
+
     spec:
+
+      # Previous scheduling logic (kept for reference)
+      # nodeSelector:
+      #   ram-node: "4gb"
+
+      # tolerations:
+      #   - key: "ram-node"
+      #     operator: "Equal"
+      #     value: "4gb"
+      #     effect: "NoSchedule"
+
+      affinity:
+
+        # Prefer Redis to run on same node as MongoDB
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: mongodb
+                topologyKey: kubernetes.io/hostname
+
+        # Avoid nodes running backend pods
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  tier: backend
+              topologyKey: kubernetes.io/hostname
+
       containers:
         - name: redis
           image: redis:7
@@ -26,9 +59,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis
+  namespace: my-micro-dev
 spec:
   selector:
     app: redis
+    tier: cache
   ports:
     - port: 6379
       targetPort: 6379

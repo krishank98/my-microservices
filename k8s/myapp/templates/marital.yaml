@@ -3,21 +3,32 @@ kind: Deployment
 metadata:
   name: marital-api
   namespace: my-micro-dev
-  labels:
-    tier: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: marital-api
+      tier: backend
+
   template:
     metadata:
       labels:
         app: marital-api
         tier: backend
+
     spec:
+      nodeSelector:
+        cpu-node: "2cpu"
+
+      tolerations:
+        - key: "cpu-node"
+          operator: "Equal"
+          value: "2cpu"
+          effect: "NoSchedule"
+
       imagePullSecrets:
         - name: ecr-secret
+
       containers:
         - name: marital-api
           image: "{{ .Values.marital.image }}:{{ .Values.marital.tag }}"
@@ -49,18 +60,18 @@ spec:
               value: redis://redis:6379
             - name: MONGO_URI
               value: mongodb://appuser:apppassword@mongodb:27017/demo
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: marital-api
   namespace: my-micro-dev
-  labels:
-    tier: backend
 spec:
   type: ClusterIP
   selector:
     app: marital-api
+    tier: backend
   ports:
     - port: 3002
       targetPort: 3002

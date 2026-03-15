@@ -2,21 +2,44 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fullname-api
-  tier: backend
   namespace: my-micro-dev
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: fullname-api
+      tier: backend
+
   template:
     metadata:
       labels:
         app: fullname-api
         tier: backend
+
     spec:
+      # nodeSelector:
+      #   cpu-node: "2cpu"
+
+      # tolerations:
+      #   - key: "cpu-node"
+      #     operator: "Equal"
+      #     value: "2cpu"
+      #     effect: "NoSchedule"
+
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - fullname-api
+              topologyKey: kubernetes.io/hostname
+
       imagePullSecrets:
         - name: ecr-secret
+
       containers:
         - name: fullname-api
           image: "{{ .Values.fullname.image }}:{{ .Values.fullname.tag }}"
@@ -50,18 +73,18 @@ spec:
               value: "6379"
             - name: MONGO_URI
               value: mongodb://appuser:apppassword@mongodb:27017/demo
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: fullname-api
   namespace: my-micro-dev
-  labels:
-    tier: backend
 spec:
   type: ClusterIP
   selector:
     app: fullname-api
+    tier: backend
   ports:
     - protocol: TCP
       port: 3000

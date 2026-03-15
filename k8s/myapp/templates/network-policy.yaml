@@ -10,6 +10,47 @@ spec:
   - Egress
 
 ---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: my-micro-dev
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-alb-to-frontend
+  namespace: my-micro-dev
+spec:
+  podSelector:
+    matchLabels:
+      tier: frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+
+---
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -28,6 +69,36 @@ spec:
           tier: frontend
 
 ---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-egress
+  namespace: my-micro-dev
+spec:
+  podSelector:
+    matchLabels:
+      tier: backend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: database
+    ports:
+    - protocol: TCP
+      port: 27017
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: cache
+    ports:
+    - protocol: TCP
+      port: 6379
+
+---
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -44,3 +115,28 @@ spec:
     - podSelector:
         matchLabels:
           tier: backend
+    ports:
+    - protocol: TCP
+      port: 27017
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-redis
+  namespace: my-micro-dev
+spec:
+  podSelector:
+    matchLabels:
+      tier: cache
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    ports:
+    - protocol: TCP
+      port: 6379

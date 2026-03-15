@@ -2,25 +2,50 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: react-frontend
-  tier: frontend
   namespace: my-micro-dev
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: react-frontend
+      tier: frontend
+
   template:
     metadata:
       labels:
         app: react-frontend
         tier: frontend
     spec:
+
+      # Previous scheduling logic (kept for reference)
+      # nodeSelector:
+      #   cpu-node: "2cpu"
+
+      # tolerations:
+      #   - key: "cpu-node"
+      #     operator: "Equal"
+      #     value: "2cpu"
+      #     effect: "NoSchedule"
+
+      # New scheduling logic using node affinity
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload
+                    operator: In
+                    values:
+                      - app
+
       imagePullSecrets:
         - name: ecr-secret
+
       containers:
         - name: react-frontend
           image: "{{ .Values.frontend.image }}:{{ .Values.frontend.tag }}"
           imagePullPolicy: {{ .Values.frontend.pullPolicy }}
+
           ports:
             - containerPort: {{ .Values.frontend.port }}
 
@@ -52,7 +77,8 @@ spec:
   type: NodePort
   selector:
     app: react-frontend
+    tier: frontend
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: {{ .Values.frontend.port }}
       nodePort: 30080
