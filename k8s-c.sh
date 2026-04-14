@@ -39,3 +39,51 @@ kubectl get pods -A
 kubectl get pvc
 kubectl get pv
 kubectl get events
+
+# 🔹 LABELS
+
+# Add label to node
+kubectl label nodes <node-name> env=prod
+
+# Add label to pod
+kubectl label pod <pod-name> app=frontend
+
+# Show labels
+kubectl get nodes --show-labels
+kubectl get pods --show-labels
+
+# Remove label
+kubectl label nodes <node-name> env-
+
+
+# 🔹 TAINTS
+
+# Add taint to node
+kubectl taint nodes <node-name> key=value:NoSchedule
+
+# Example
+kubectl taint nodes minikube dedicated=db:NoSchedule
+
+# View taints
+kubectl describe node <node-name> | grep Taint
+
+# Remove taint (UNTAINT)
+kubectl taint nodes <node-name> key=value:NoSchedule-
+
+
+# 🔹 CONTEXT (KUBECONFIG)
+
+# View current context
+kubectl config current-context
+
+# List all contexts
+kubectl config get-contexts
+
+# Switch context
+kubectl config use-context <context-name>
+
+# Set default namespace for current context
+kubectl config set-context --current --namespace=krish
+
+# View full config
+kubectl config view
