@@ -1,0 +1,89 @@
+# 🔐 Secret (Mongo credentials)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-secret
+type: Opaque
+stringData:
+  username: root
+  password: rootpassword
+
+---
+# 🌐 Headless Service (for stable DNS)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb
+  ports:
+    - port: 27017
+      name: mongo
+
+---
+# 🌐 Optional ClusterIP Service (for app access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-client
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+# ⚙️ StatefulSet (Replica Set)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+spec:
+  serviceName: mongodb
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:7
+          command:
+            - mongod
+            - "--replSet"
+            - "rs0"
+            - "--bind_ip_all"
+          ports:
+            - containerPort: 27017
+
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: password
+
+          volumeMounts:
+            - name: mongo-storage
+              mountPath: /data/db
+
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi

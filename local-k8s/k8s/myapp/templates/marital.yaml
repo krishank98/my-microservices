@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marital-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marital-api
+  template:
+    metadata:
+      labels:
+        app: marital-api
+    spec:
+      imagePullSecrets:
+        - name: ecr-secret
+      containers:
+        - name: marital-api
+          image: "{{ .Values.marital.image }}:{{ .Values.marital.tag }}"
+          imagePullPolicy: {{ .Values.marital.pullPolicy }}
+          ports:
+            - containerPort: 3002
+          env:
+            - name: SPRING_DATA_REDIS_HOST
+              value: redis
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://appuser:apppassword@mongodb:27017/demo
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: marital-api
+spec:
+  selector:
+    app: marital-api
+  ports:
+  - port: 3002
+    targetPort: 3002

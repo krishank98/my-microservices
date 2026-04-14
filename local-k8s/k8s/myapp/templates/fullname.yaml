@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fullname-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fullname-api
+  template:
+    metadata:
+      labels:
+        app: fullname-api
+    spec:
+      imagePullSecrets:
+        - name: ecr-secret
+      containers:
+        - name: fullname-api
+          image: "{{ .Values.fullname.image }}:{{ .Values.fullname.tag }}"
+          imagePullPolicy: {{ .Values.fullname.pullPolicy }}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: MONGO_URI
+              value: mongodb://appuser:apppassword@mongodb:27017/demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fullname-api
+spec:
+  selector:
+    app: fullname-api
+  ports:
+    - port: 3000
+      targetPort: 3000
